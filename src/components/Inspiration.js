@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useRef } from "react"
+import { useNavigate } from "react-router-dom"
 import "./Inspiration.css"
 
 const InspirationCard = ({ image, roomLabel, title, description, onViewGallery }) => {
@@ -37,7 +38,7 @@ const InspirationCard = ({ image, roomLabel, title, description, onViewGallery }
       <div className="card-content">
         <h3 className="card-title">{title}</h3>
         <p className="card-description">{description}</p>
-        <button onClick={onViewGallery} className="view-gallery">
+        <button onClick={() => onViewGallery(roomLabel.toLowerCase())} className="view-gallery">
           View Gallery
           <svg
             width="24"
@@ -60,6 +61,7 @@ const InspirationCard = ({ image, roomLabel, title, description, onViewGallery }
 const Inspiration = () => {
   const titleRef = useRef(null)
   const gridRef = useRef(null)
+  const navigate = useNavigate()
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -90,6 +92,9 @@ const Inspiration = () => {
     }
   }, [])
 
+  const handleViewGallery = (section) => {
+    navigate(`/gallery#${section}`)
+  }
 
   return (
     <section className="inspiration">
@@ -103,21 +108,21 @@ const Inspiration = () => {
             roomLabel="Living Room"
             title="Modern Living Spaces"
             description="Transform your living room with our trending color palettes"
-           
+            onViewGallery={handleViewGallery}
           />
           <InspirationCard
             image="https://images.unsplash.com/photo-1556911220-bff31c812dba?auto=format&fit=crop&w=800&q=80"
             roomLabel="Kitchen"
             title="Kitchen Makeovers"
             description="Create a stunning kitchen with our specialized paints"
-            
+            onViewGallery={handleViewGallery}
           />
           <InspirationCard
             image="https://images.unsplash.com/photo-1616594039964-ae9021a400a0?auto=format&fit=crop&w=800&q=80"
             roomLabel="Bedroom"
             title="Peaceful Bedrooms"
             description="Design your perfect sanctuary with soothing colors"
-            
+            onViewGallery={handleViewGallery}
           />
         </div>
       </div>

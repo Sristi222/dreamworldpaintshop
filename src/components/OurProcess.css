@@ -24,7 +24,7 @@
   }
   
   .process-title {
-    font-family: "Playfair Display", serif;
+    font-family: "Inter", serif;
     font-size: 2.5rem;
     font-weight: 900;
     color: var(--dark);
@@ -116,7 +116,7 @@
   }
   
   .step-title {
-    font-family: "Playfair Display", serif;
+    font-family: "Inter", serif;
     font-size: 1.2rem;
     font-weight: 700;
     color: var(--dark);

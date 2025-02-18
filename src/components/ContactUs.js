@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useRef, useEffect } from "react"
 import "./ContactUs.css"
 
 function ContactUs() {
@@ -8,6 +8,14 @@ function ContactUs() {
   const [email, setEmail] = useState("")
   const [message, setMessage] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const contactRef = useRef(null)
+
+  useEffect(() => {
+    const hash = window.location.hash
+    if (hash === "#contact" && contactRef.current) {
+      contactRef.current.scrollIntoView({ behavior: "smooth" })
+    }
+  }, [])
 
   const handleSubmit = (e) => {
     e.preventDefault()
@@ -24,11 +32,11 @@ function ContactUs() {
   }
 
   return (
-    <section className="contact-us">
+    <section className="contact-us" id="contact" ref={contactRef}>
       <div className="contact-container">
         <h2 className="contact-title">Get in Touch</h2>
         <div className="contact-content">
-          {/* Contact Form - Left Side */}
+          {/* Contact Form */}
           <div className="contact-form">
             <h3>Send Us a Message</h3>
             <form id="contactForm" onSubmit={handleSubmit}>
@@ -76,25 +84,10 @@ function ContactUs() {
             </form>
           </div>
 
-          {/* Contact Info - Right Side */}
+          {/* Contact Info */}
           <div className="contact-info">
             <h3>Contact Information</h3>
             <ul>
-              <li>
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
-                  <circle cx="12" cy="10" r="3"></circle>
-                </svg>
-                <span>123 Painting Street, Color City, 12345</span>
-              </li>
               <li>
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -126,21 +119,35 @@ function ContactUs() {
               </li>
             </ul>
           </div>
-        </div>
-        <div className="map-placeholder">
-          <div className="map-content">
-            <h3>Visit Our Store</h3>
-            <p>To view our location on Google Maps, please follow these steps:</p>
-            <ol>
-              <li>
-                Get a Google Maps API key from the{" "}
-                <a href="https://console.cloud.google.com/" target="_blank" rel="noopener noreferrer">
-                  Google Cloud Console
-                </a>
-              </li>
-              <li>Enable the Maps JavaScript API in your project</li>
-              <li>Add your API key to the environment variables as NEXT_PUBLIC_GOOGLE_MAPS_API_KEY</li>
-            </ol>
+
+          {/* Map Placeholder - Now on the right side */}
+          <div className="map-placeholder">
+            <div className="map-content">
+              <div className="map-icon">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                  <circle cx="12" cy="10" r="3"></circle>
+                </svg>
+              </div>
+              <h3>Visit Our Store</h3>
+              <p>123 Painting Street, Color City, 12345</p>
+              <a
+                href="https://goo.gl/maps/your-store-location"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="directions-btn"
+              >
+                Get Directions
+              </a>
+            </div>
           </div>
         </div>
       </div>

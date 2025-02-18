@@ -1,14 +1,16 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { Link } from "react-router-dom"
-import "./ProductSection.css"
+import Navbar from "../components/Navbar"
+import "../components/ProductSection.css"
+import Footer from "../components/Footer"
 
-const ProductSection = ({ products, mainCategories, subCategories }) => {
+const AllProducts = ({ products, mainCategories, subCategories }) => {
   const [currentMainCategory, setCurrentMainCategory] = useState("all")
   const [currentSubCategory, setCurrentSubCategory] = useState(null)
   const [modalProduct, setModalProduct] = useState(null)
-  const [isModalVisible, setIsModalVisible] = useState(false) // Added state for modal visibility
+  const [isModalVisible, setIsModalVisible] = useState(false)
 
   const getFilteredProducts = () => {
     if (currentMainCategory === "all") {
@@ -31,20 +33,43 @@ const ProductSection = ({ products, mainCategories, subCategories }) => {
 
   const openModal = (product) => {
     setModalProduct(product)
-    setIsModalVisible(true) // Show modal when opening
+    document.body.style.overflow = "hidden"
+    setTimeout(() => {
+      setIsModalVisible(true)
+    }, 10)
   }
 
-  const closeModal = () => {
-    setModalProduct(null)
-    setIsModalVisible(false) // Hide modal when closing
-  }
+  const closeModal = useCallback(() => {
+    setIsModalVisible(false)
+    document.body.style.overflow = "visible"
+    setTimeout(() => {
+      setModalProduct(null)
+    }, 300)
+  }, [])
 
-  const filteredProducts = getFilteredProducts().slice(0, 3) // Display only 6 products
+  useEffect(() => {
+    const handleEscape = (event) => {
+      if (event.key === "Escape") {
+        closeModal()
+      }
+    }
+
+    if (isModalVisible) {
+      document.addEventListener("keydown", handleEscape)
+    }
+
+    return () => {
+      document.removeEventListener("keydown", handleEscape)
+    }
+  }, [isModalVisible, closeModal])
+
+  const filteredProducts = getFilteredProducts()
 
   return (
-    <section className="products">
+    <div className="all-products-page">
+      <Navbar />
       <div className="container">
-        <h2 className="section-title">Featured Products</h2>
+        <h1 className="section">All Products</h1>
 
         <div className="filter-options main-filter">
           {mainCategories.map((category) => (
@@ -95,9 +120,9 @@ const ProductSection = ({ products, mainCategories, subCategories }) => {
           ))}
         </div>
 
-        <div className="view-all-container">
-          <Link to="/products" className="view-all-btn">
-            View All Products
+        <div className="back-link-container">
+          <Link to="/" className="back-link">
+            Back to Home
           </Link>
         </div>
       </div>
@@ -112,12 +137,14 @@ const ProductSection = ({ products, mainCategories, subCategories }) => {
             <h2 className="modal-product-title">{modalProduct.title}</h2>
             <p className="modal-product-description">{modalProduct.description}</p>
             <p className="modal-product-price">{modalProduct.price}</p>
+            <div className="modal-product-details">{modalProduct.details}</div>
           </div>
         </div>
       )}
-    </section>
+      <Footer />
+    </div>
   )
 }
 
-export default ProductSection
+export default AllProducts
 
