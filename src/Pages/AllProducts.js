@@ -1,69 +1,59 @@
-"use client"
+"use client";
 
-import { useState, useEffect, useCallback } from "react"
-import { Link } from "react-router-dom"
-import Navbar from "../components/Navbar"
-import "../components/ProductSection.css"
-import Footer from "../components/Footer"
+import { useState, useEffect } from "react";
+import axios from "axios";
+import { Link } from "react-router-dom";
+import Navbar from "../components/Navbar";
+import "../components/ProductSection.css";
+import Footer from "../components/Footer";
 
-const AllProducts = ({ products, mainCategories, subCategories }) => {
-  const [currentMainCategory, setCurrentMainCategory] = useState("all")
-  const [currentSubCategory, setCurrentSubCategory] = useState(null)
-  const [modalProduct, setModalProduct] = useState(null)
-  const [isModalVisible, setIsModalVisible] = useState(false)
+const AllProducts = ({ mainCategories = [], subCategories = {} }) => {
+  const [currentMainCategory, setCurrentMainCategory] = useState("all");
+  const [currentSubCategory, setCurrentSubCategory] = useState(null);
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
 
+  // **Fetch Products from Backend**
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const response = await axios.get("http://localhost:5000/api/products"); // Adjust if needed
+        setProducts(response.data || []);
+      } catch (error) {
+        console.error("❌ Error fetching products:", error);
+        setProducts([]); // Prevents issues if request fails
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, []);
+
+  // **Filter Products Based on Selected Category**
   const getFilteredProducts = () => {
-    if (currentMainCategory === "all") {
-      return Object.values(products).flatMap((category) => Object.values(category).flat())
+    let filtered = [...products];
+
+    if (currentMainCategory !== "all") {
+      filtered = filtered.filter((product) => product.category === currentMainCategory);
     }
     if (currentSubCategory) {
-      return products[currentMainCategory]?.[currentSubCategory] || []
+      filtered = filtered.filter((product) => product.subCategory === currentSubCategory);
     }
-    return Object.values(products[currentMainCategory] || {}).flat()
-  }
+
+    return filtered;
+  };
 
   const handleMainCategoryClick = (category) => {
-    setCurrentMainCategory(category)
-    setCurrentSubCategory(null)
-  }
+    setCurrentMainCategory(category);
+    setCurrentSubCategory(null);
+  };
 
   const handleSubCategoryClick = (subCategory) => {
-    setCurrentSubCategory(subCategory)
-  }
+    setCurrentSubCategory(subCategory);
+  };
 
-  const openModal = (product) => {
-    setModalProduct(product)
-    document.body.style.overflow = "hidden"
-    setTimeout(() => {
-      setIsModalVisible(true)
-    }, 10)
-  }
-
-  const closeModal = useCallback(() => {
-    setIsModalVisible(false)
-    document.body.style.overflow = "visible"
-    setTimeout(() => {
-      setModalProduct(null)
-    }, 300)
-  }, [])
-
-  useEffect(() => {
-    const handleEscape = (event) => {
-      if (event.key === "Escape") {
-        closeModal()
-      }
-    }
-
-    if (isModalVisible) {
-      document.addEventListener("keydown", handleEscape)
-    }
-
-    return () => {
-      document.removeEventListener("keydown", handleEscape)
-    }
-  }, [isModalVisible, closeModal])
-
-  const filteredProducts = getFilteredProducts()
+  const filteredProducts = getFilteredProducts();
 
   return (
     <div className="all-products-page">
@@ -71,18 +61,22 @@ const AllProducts = ({ products, mainCategories, subCategories }) => {
       <div className="container">
         <h1 className="section">All Products</h1>
 
-        <div className="filter-options main-filter">
-          {mainCategories.map((category) => (
-            <button
-              key={category.id}
-              className={`filter-button ${currentMainCategory === category.id ? "active" : ""}`}
-              onClick={() => handleMainCategoryClick(category.id)}
-            >
-              {category.name}
-            </button>
-          ))}
-        </div>
+        {/* ✅ Prevent crash by checking if `mainCategories` exists */}
+        {mainCategories.length > 0 && (
+          <div className="filter-options main-filter">
+            {mainCategories.map((category) => (
+              <button
+                key={category.id}
+                className={`filter-button ${currentMainCategory === category.id ? "active" : ""}`}
+                onClick={() => handleMainCategoryClick(category.id)}
+              >
+                {category.name}
+              </button>
+            ))}
+          </div>
+        )}
 
+        {/* ✅ Prevent crash by checking if `subCategories[currentMainCategory]` exists */}
         {currentMainCategory !== "all" && subCategories[currentMainCategory] && (
           <div className="filter-options sub-filter">
             <div className="sub-categories">
@@ -92,59 +86,45 @@ const AllProducts = ({ products, mainCategories, subCategories }) => {
                   className={`filter-button ${currentSubCategory === subCategory ? "active" : ""}`}
                   onClick={() => handleSubCategoryClick(subCategory)}
                 >
-                  {subCategory
-                    .split("-")
-                    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-                    .join(" ")}
+                  {subCategory.charAt(0).toUpperCase() + subCategory.slice(1)}
                 </button>
               ))}
             </div>
           </div>
         )}
 
-        <div className="products-grid">
-          {filteredProducts.map((product) => (
-            <div key={product.id} className="product-card">
-              <div className="product-image-container">
-                <img src={product.image || "/placeholder.svg"} alt={product.title} className="product-image" />
-                <button className="view-btn" onClick={() => openModal(product)}>
-                  Quick View
-                </button>
-              </div>
-              <div className="product-info">
-                <h3 className="product-title">{product.title}</h3>
-                <p className="product-description">{product.description}</p>
-                <p className="product-price">{product.price}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        <div className="back-link-container">
-          <Link to="/" className="back-link">
-            Back to Home
-          </Link>
-        </div>
+        {/* ✅ Show Loading State */}
+        {loading ? (
+          <p>Loading products...</p>
+        ) : (
+          <div className="products-grid">
+            {filteredProducts.length > 0 ? (
+              filteredProducts.map((product) => (
+                <div key={product._id} className="product-card">
+                  <div className="product-image-container">
+                    <img
+                      src={product.imageUrl ? `http://localhost:5000${product.imageUrl}` : "/placeholder.svg"}
+                      alt={product.name}
+                      className="product-image"
+                    />
+                  </div>
+                  <div className="product-info">
+                    <h3 className="product-title">{product.name}</h3>
+                    <p className="product-description">{product.description}</p>
+                    <p className="product-price">Rs. {product.price}</p>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <p>No products available.</p> // ✅ Prevents crash when no products exist
+            )}
+          </div>
+        )}
       </div>
 
-      {modalProduct && (
-        <div className={`modal ${isModalVisible ? "show" : ""}`} onClick={closeModal}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <span className="close" onClick={closeModal}>
-              &times;
-            </span>
-            <img src={modalProduct.image || "/placeholder.svg"} alt={modalProduct.title} className="modal-image" />
-            <h2 className="modal-product-title">{modalProduct.title}</h2>
-            <p className="modal-product-description">{modalProduct.description}</p>
-            <p className="modal-product-price">{modalProduct.price}</p>
-            <div className="modal-product-details">{modalProduct.details}</div>
-          </div>
-        </div>
-      )}
       <Footer />
     </div>
-  )
-}
+  );
+};
 
-export default AllProducts
-
+export default AllProducts;

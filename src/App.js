@@ -1,78 +1,21 @@
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom"
-import Header from "./components/Header"
-import ProductSection from "./components/ProductSection"
-import Services from "./components/Services"
-import OurProcess from "./components/OurProcess"
-import Inspiration from "./components/Inspiration"
-import ContactUs from "./components/ContactUs"
-import AllProducts from "./Pages/AllProducts"
-import Testimonials from "./components/Testimonials"
-import Footer from "./components/Footer"
-import Gallery from "./Pages/Gallery" // Import the Gallery component
-import "./App.css"
+import { BrowserRouter as Router, Route, Routes, Navigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { jwtDecode } from "jwt-decode";
 
-const products = {
-  paints: {
-    interior: [
-      {
-        id: "int1",
-        title: "Premium Interior Paint",
-        description: "High-quality interior wall paint",
-        price: "Rs. 450",
-        image: "https://images.unsplash.com/photo-1589939705384-5185137a7f0f?auto=format&fit=crop&w=300&q=80",
-        details: "Smooth finish, easy to clean, and long-lasting color.",
-      },
-      {
-        id: "int2",
-        title: "Eco-Friendly Interior Paint",
-        description: "Low-VOC interior wall paint",
-        price: "Rs. 550",
-        image: "https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&w=300&q=80",
-        details: "Environmentally friendly, excellent coverage, and durable finish.",
-      },
-    ],
-    exterior: [
-      {
-        id: "ext1",
-        title: "Weather Shield Exterior Paint",
-        description: "Weather-resistant exterior paint",
-        price: "Rs. 650",
-        image: "https://images.unsplash.com/photo-1595185584650-e1b2b91f284b?auto=format&fit=crop&w=300&q=80",
-        details: "Protects against harsh weather conditions, UV-resistant, and long-lasting color.",
-      },
-      {
-        id: "ext2",
-        title: "Textured Exterior Paint",
-        description: "Textured finish for exterior walls",
-        price: "Rs. 750",
-        image: "https://images.unsplash.com/photo-1604148482093-d55d6fc62400?auto=format&fit=crop&w=300&q=80",
-        details: "Hides surface imperfections, water-resistant, and durable.",
-      },
-    ],
-  },
-  distemper: {
-    acrylic: [
-      {
-        id: "dis1",
-        title: "Acrylic Distemper",
-        description: "Water-based acrylic distemper",
-        price: "Rs. 300",
-        image: "https://images.unsplash.com/photo-1562184760-a11b3cf7c169?auto=format&fit=crop&w=300&q=80",
-        details: "Economical, good coverage, and easy to apply.",
-      },
-    ],
-    synthetic: [
-      {
-        id: "dis2",
-        title: "Synthetic Distemper",
-        description: "Oil-based synthetic distemper",
-        price: "Rs. 350",
-        image: "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?auto=format&fit=crop&w=300&q=80",
-        details: "Durable finish, suitable for high-traffic areas.",
-      },
-    ],
-  },
-}
+import Auth from "./components/Auth";
+import AdminDashboard from "./components/AdminDashboard";
+
+import Gallery from "./Pages/Gallery";
+import AllProducts from "./Pages/AllProducts";
+import Header from "./components/Header";
+import Footer from "./components/Footer";
+import Services from "./components/Services";
+import OurProcess from "./components/OurProcess";
+import Inspiration from "./components/Inspiration";
+import Testimonials from "./components/Testimonials";
+import ContactUs from "./components/ContactUs";
+import ProductSection from "./components/ProductSection";
+import "./App.css";
 
 const mainCategories = [
   { id: "all", name: "All Products" },
@@ -83,7 +26,7 @@ const mainCategories = [
   { id: "tools", name: "Paint Brush and Rollers" },
   { id: "enamel", name: "Enamel" },
   { id: "putty-primers", name: "Putty & Primers" },
-]
+];
 
 const subCategories = {
   paints: ["interior", "exterior", "emulsion", "textured"],
@@ -93,20 +36,37 @@ const subCategories = {
   tools: ["flat", "round", "foam", "textured"],
   enamel: ["synthetic", "water-based", "high-gloss", "satin"],
   "putty-primers": ["wall-putty", "acrylic-putty", "cement-putty", "oil-primer", "water-primer"],
-}
+};
 
 function App() {
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      try {
+        const decoded = jwtDecode(token);
+        setUser(decoded);
+      } catch (error) {
+        console.error("Invalid token:", error);
+        localStorage.removeItem("token"); // Remove invalid token
+        setUser(null);
+      }
+    }
+  }, []);
+
   return (
     <Router>
       <div className="App">
         <Routes>
+          {/* Home Page with Full Sections */}
           <Route
             path="/"
             element={
               <>
                 <Header />
                 <main className="App-main">
-                  <ProductSection products={products} mainCategories={mainCategories} subCategories={subCategories} />
+                  <ProductSection mainCategories={mainCategories} subCategories={subCategories} />
                   <Services />
                   <OurProcess />
                   <Inspiration />
@@ -117,16 +77,28 @@ function App() {
               </>
             }
           />
+
+          {/* Products Page */}
           <Route
             path="/products"
-            element={<AllProducts products={products} mainCategories={mainCategories} subCategories={subCategories} />}
+            element={<AllProducts mainCategories={mainCategories} subCategories={subCategories} />}
           />
-          <Route path="/gallery" element={<Gallery />} /> {/* Add the Gallery route */}
+
+          {/* Gallery Page */}
+          <Route path="/gallery" element={<Gallery />} />
+
+          {/* Authentication Page */}
+          <Route path="/auth" element={<Auth setUser={setUser} />} />
+
+          {/* Admin Dashboard (Restricted Access) */}
+          <Route
+            path="/admin"
+            element={user?.isAdmin ? <AdminDashboard /> : <Navigate to="/auth" />}
+          />
         </Routes>
       </div>
     </Router>
-  )
+  );
 }
 
-export default App
-
+export default App;

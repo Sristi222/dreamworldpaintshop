@@ -1,100 +1,84 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Link } from "react-router-dom"
+import axios from "axios"
 import "./ProductSection.css"
 
-const ProductSection = ({ products, mainCategories, subCategories }) => {
-  const [currentMainCategory, setCurrentMainCategory] = useState("all")
-  const [currentSubCategory, setCurrentSubCategory] = useState(null)
+const ProductSection = ({ mainCategories = [], subCategories = {} }) => {
+  const [products, setProducts] = useState([])
+  const [loading, setLoading] = useState(true) // ✅ Loading state to avoid empty data issues
+  const [error, setError] = useState(null) // ✅ Track errors
   const [modalProduct, setModalProduct] = useState(null)
-  const [isModalVisible, setIsModalVisible] = useState(false) // Added state for modal visibility
+  const [isModalVisible, setIsModalVisible] = useState(false)
 
-  const getFilteredProducts = () => {
-    if (currentMainCategory === "all") {
-      return Object.values(products).flatMap((category) => Object.values(category).flat())
+  // **Fetch products from backend**
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const response = await axios.get("http://localhost:5000/api/products") // Adjust URL if needed
+        setProducts(response.data.slice(0, 3) || []) // ✅ Display only first 3 products
+      } catch (error) {
+        console.error("❌ Error fetching products:", error)
+        setError("Failed to load products. Please try again later.") // ✅ Display error message
+        setProducts([]) // ✅ Prevents undefined issues
+      } finally {
+        setLoading(false) // ✅ Set loading to false after fetch attempt
+      }
     }
-    if (currentSubCategory) {
-      return products[currentMainCategory]?.[currentSubCategory] || []
-    }
-    return Object.values(products[currentMainCategory] || {}).flat()
-  }
 
-  const handleMainCategoryClick = (category) => {
-    setCurrentMainCategory(category)
-    setCurrentSubCategory(null)
-  }
-
-  const handleSubCategoryClick = (subCategory) => {
-    setCurrentSubCategory(subCategory)
-  }
+    fetchProducts()
+  }, [])
 
   const openModal = (product) => {
     setModalProduct(product)
-    setIsModalVisible(true) // Show modal when opening
+    setIsModalVisible(true)
   }
 
   const closeModal = () => {
     setModalProduct(null)
-    setIsModalVisible(false) // Hide modal when closing
+    setIsModalVisible(false)
   }
-
-  const filteredProducts = getFilteredProducts().slice(0, 3) // Display only 6 products
 
   return (
     <section className="products">
       <div className="container">
         <h2 className="section-title">Featured Products</h2>
 
-        <div className="filter-options main-filter">
-          {mainCategories.map((category) => (
-            <button
-              key={category.id}
-              className={`filter-button ${currentMainCategory === category.id ? "active" : ""}`}
-              onClick={() => handleMainCategoryClick(category.id)}
-            >
-              {category.name}
-            </button>
-          ))}
-        </div>
-
-        {currentMainCategory !== "all" && subCategories[currentMainCategory] && (
-          <div className="filter-options sub-filter">
-            <div className="sub-categories">
-              {subCategories[currentMainCategory].map((subCategory) => (
-                <button
-                  key={subCategory}
-                  className={`filter-button ${currentSubCategory === subCategory ? "active" : ""}`}
-                  onClick={() => handleSubCategoryClick(subCategory)}
-                >
-                  {subCategory
-                    .split("-")
-                    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-                    .join(" ")}
-                </button>
-              ))}
-            </div>
+        {/* ✅ Show Loading or Error Message */}
+        {loading ? (
+          <p>Loading products...</p>
+        ) : error ? (
+          <p className="error-message">{error}</p> // ✅ Show error message if loading fails
+        ) : (
+          <div className="products-grid">
+            {products.length > 0 ? (
+              products.map((product) => (
+                <div key={product._id} className="product-card">
+                  <div className="product-image-container">
+                    <img
+                      src={product.imageUrl ? `http://localhost:5000${product.imageUrl}` : "/placeholder.svg"}
+                      alt={product.name}
+                      className="product-image"
+                    />
+                    <button className="view-btn" onClick={() => openModal(product)}>
+                      Quick View
+                    </button>
+                  </div>
+                  <div className="product-info">
+                    <h3 className="product-title">{product.name}</h3>
+                    <p className="product-description">{product.description}</p>
+                    <p className="product-price">Rs. {product.price}</p>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <p>No products available.</p> // ✅ Display this when no products are found
+            )}
           </div>
         )}
 
-        <div className="products-grid">
-          {filteredProducts.map((product) => (
-            <div key={product.id} className="product-card">
-              <div className="product-image-container">
-                <img src={product.image || "/placeholder.svg"} alt={product.title} className="product-image" />
-                <button className="view-btn" onClick={() => openModal(product)}>
-                  Quick View
-                </button>
-              </div>
-              <div className="product-info">
-                <h3 className="product-title">{product.title}</h3>
-                <p className="product-description">{product.description}</p>
-                <p className="product-price">{product.price}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-
+        {/* View All Button - Redirects to All Products Page */}
         <div className="view-all-container">
           <Link to="/products" className="view-all-btn">
             View All Products
@@ -102,16 +86,21 @@ const ProductSection = ({ products, mainCategories, subCategories }) => {
         </div>
       </div>
 
+      {/* Product Quick View Modal */}
       {modalProduct && (
         <div className={`modal ${isModalVisible ? "show" : ""}`} onClick={closeModal}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <span className="close" onClick={closeModal}>
               &times;
             </span>
-            <img src={modalProduct.image || "/placeholder.svg"} alt={modalProduct.title} className="modal-image" />
-            <h2 className="modal-product-title">{modalProduct.title}</h2>
+            <img
+              src={modalProduct.imageUrl ? `http://localhost:5000${modalProduct.imageUrl}` : "/placeholder.svg"}
+              alt={modalProduct.name}
+              className="modal-image"
+            />
+            <h2 className="modal-product-title">{modalProduct.name}</h2>
             <p className="modal-product-description">{modalProduct.description}</p>
-            <p className="modal-product-price">{modalProduct.price}</p>
+            <p className="modal-product-price">Rs. {modalProduct.price}</p>
           </div>
         </div>
       )}
@@ -120,4 +109,3 @@ const ProductSection = ({ products, mainCategories, subCategories }) => {
 }
 
 export default ProductSection
-

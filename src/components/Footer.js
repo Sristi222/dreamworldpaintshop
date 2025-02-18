@@ -101,51 +101,27 @@ const Footer = () => {
           <h4 className="footer-heading">Our Store</h4>
           <div className="footer-gallery">
             <img
-              src="https://images.unsplash.com/photo-1525909002-1b05e0c869d8?q=80&w=1935&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+              src="https://images.unsplash.com/photo-1525909002-1b05e0c869d8?q=80&w=1935&auto=format&fit=crop"
               alt="Store Interior"
               className="footer-gallery-image"
-              onClick={() =>
-                openModal(
-                  "https://images.unsplash.com/photo-1525909002-1b05e0c869d8?q=80&w=1935&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-                )
-              }
+              onClick={() => openModal("https://images.unsplash.com/photo-1525909002-1b05e0c869d8?q=80&w=1935&auto=format&fit=crop")}
             />
             <img
-              src="https://plus.unsplash.com/premium_photo-1726750875095-a928734b53f0?q=80&w=1998&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+              src="https://plus.unsplash.com/premium_photo-1726750875095-a928734b53f0?q=80&w=1998&auto=format&fit=crop"
               alt="Paint Selection"
               className="footer-gallery-image"
-              onClick={() =>
-                openModal(
-                  "https://plus.unsplash.com/premium_photo-1726750875095-a928734b53f0?q=80&w=1998&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-                )
-              }
-            />
-            <img
-              src="https://plus.unsplash.com/premium_photo-1703385177149-a4b56c545344?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
-              alt="Paint Mixing"
-              className="footer-gallery-image"
-              onClick={() =>
-                openModal(
-                  "https://plus.unsplash.com/premium_photo-1703385177149-a4b56c545344?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-                )
-              }
-            />
-            <img
-              src="https://images.unsplash.com/photo-1528396518501-b53b655eb9b3?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
-              alt="Color Consultation"
-              className="footer-gallery-image"
-              onClick={() =>
-                openModal(
-                  "https://images.unsplash.com/photo-1528396518501-b53b655eb9b3?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-                )
-              }
+              onClick={() => openModal("https://plus.unsplash.com/premium_photo-1726750875095-a928734b53f0?q=80&w=1998&auto=format&fit=crop")}
             />
           </div>
         </div>
       </div>
 
+      {/* Updated Footer Bottom Section with Admin Links */}
       <div className="footer-bottom">
-        <p>© {new Date().getFullYear()} Dream House Color World. All Rights Reserved</p>
+        <p>
+          © {new Date().getFullYear()} Dream House Color World. All Rights Reserved |  
+          <Link to="/auth" className="footer-link"> Admin Login</Link> |  
+        </p>
       </div>
 
       {modalImage && (
@@ -163,4 +139,3 @@ const Footer = () => {
 }
 
 export default Footer
-
